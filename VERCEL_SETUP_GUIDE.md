@@ -70,6 +70,7 @@ You'll add 4 variables. For each one:
 - **Key**: `NEXT_PUBLIC_SUPABASE_URL`
 - **Value**: Paste your Supabase Project URL (from Part 1, Value 1)
   - Example: `https://abcdefghijklmnop.supabase.co`
+  - ⚠️ **CRITICAL:** Make sure it's the API URL (`https://xxxxx.supabase.co`), NOT the dashboard URL!
 - **Environments**: ☑ Production ☑ Preview ☑ Development
 - Click **"Save"**
 
