@@ -55,6 +55,37 @@ supabase.from("contacts").insert({
 
 ---
 
+## What About Metrics Like Revenue and Lead Quantity?
+
+### These Are **Calculated**, Not Stored
+
+Metrics like:
+- **Total Revenue** - Calculated from closed leads (`priceSoldAt` + `upsellAmount`)
+- **Lead Quantity** - Count of all leads in `sales_leads` table
+- **Close Rate** - Calculated as (closed leads / total leads) × 100
+- **Average Sale Price** - Calculated from closed leads
+
+**How it works:**
+1. **The app reads all your leads from Supabase**
+2. **It calculates metrics on-the-fly** (in real-time)
+3. **No separate "metrics" table** - it's all calculated from your actual data
+
+**Example:**
+```javascript
+// When you view the dashboard, the app does this:
+const closedLeads = leads.filter(l => l.status === "Closed");
+const totalRevenue = closedLeads.reduce((sum, l) => 
+  sum + (l.priceSoldAt || 0) + (l.upsellAmount || 0), 0
+);
+```
+
+**So:**
+- ✅ Add a lead → It's saved to Supabase → Revenue/metrics update automatically
+- ✅ Close a lead → Update saved to Supabase → Revenue/metrics recalculate
+- ✅ Everything is always up-to-date!
+
+---
+
 ## What About Existing Data in Supabase?
 
 If you already have data in Supabase:
@@ -70,70 +101,111 @@ If you already have data in Supabase:
 
 Your data is isolated by `tenant_id`:
 - Each user/team has a `tenant_id` (like "default-tenant")
-- The app only shows data for YOUR `tenant_id`
+- The app only shows data for **YOUR** `tenant_id`
 - Other users with different `tenant_id` won't see your data
-- This keeps data separate between different teams/accounts
+
+**This means:**
+- ✅ Your existing data in Supabase (with your `tenant_id`) → Shows in app
+- ✅ New data you add → Gets your `tenant_id` automatically
+- ✅ Everything is properly isolated
 
 ---
 
-## Quick Test
+## What Data Gets Saved?
 
-Want to verify it's working?
+### ✅ Saved to Supabase (Permanent Storage):
 
-1. **Add a test contact in your app:**
-   - Go to Contacts
-   - Add a new contact with a unique name (like "Test Contact 123")
-   - Save it
+1. **Contacts** → `contacts` table
+2. **Sales Leads** → `sales_leads` table
+   - Includes: business name, price, status, closed date, revenue, etc.
+3. **Invoices** → `invoices` table
+4. **Reviews** → `reviews` table
+5. **Workflows** → `workflows` table
+6. **Activity Log** → `activity_log` table
 
-2. **Check Supabase:**
-   - Go to Supabase → Table Editor → `contacts`
-   - Look for "Test Contact 123"
-   - ✅ You should see it there!
+### 📊 Calculated On-the-Fly (Not Stored):
 
-3. **Edit it in Supabase:**
-   - Change the name to "Test Contact 456" in Supabase
-   - Save in Supabase
-
-4. **Refresh your app:**
-   - The contact should now show as "Test Contact 456"
-   - ✅ Changes sync both ways!
+1. **Total Revenue** - Sum of closed leads
+2. **Lead Count** - Count of leads
+3. **Close Rate** - Percentage calculation
+4. **Average Sale Price** - Calculated from closed leads
+5. **Industry Metrics** - Calculated from leads grouped by industry
+6. **Dashboard Stats** - All calculated from your actual data
 
 ---
 
-## Summary
+## Example Flow
 
-| Action | What Happens |
-|--------|-------------|
-| Add data in app | ✅ Saves to Supabase |
-| Edit data in app | ✅ Updates in Supabase |
-| Delete data in app | ✅ Deletes from Supabase |
-| Existing Supabase data | ✅ Shows in app |
-| Edit in Supabase | ✅ Shows in app (after refresh) |
+### Scenario: You Add a New Lead
 
-**Everything is bidirectional and automatic!** 🎉
+1. **You fill out the form** in the app (business name, price, etc.)
+2. **You click "Save"**
+3. **App saves to Supabase:**
+   ```sql
+   INSERT INTO sales_leads (business_name, current_price, status, tenant_id, ...)
+   VALUES ('ABC Company', 5000, 'Not Interested', 'default-tenant', ...)
+   ```
+4. **Data appears in:**
+   - ✅ Your app (immediately)
+   - ✅ Supabase Table Editor → `sales_leads` table
+5. **Dashboard metrics update automatically:**
+   - Lead count increases
+   - Revenue stays the same (until you close it)
+
+### Scenario: You Close a Lead
+
+1. **You change status to "Closed"** and enter sale price
+2. **App updates in Supabase:**
+   ```sql
+   UPDATE sales_leads 
+   SET status = 'Closed', price_sold_at = 5000, closed_date = NOW()
+   WHERE id = 'lead-id'
+   ```
+3. **Dashboard metrics update:**
+   - Revenue increases by £5,000
+   - Close rate increases
+   - Average sale price updates
+
+---
+
+## Quick Summary
+
+| Question | Answer |
+|----------|--------|
+| **Does data I add save to Supabase?** | ✅ Yes, immediately |
+| **Does existing Supabase data show in app?** | ✅ Yes, automatically |
+| **Are metrics like revenue stored?** | ❌ No, calculated on-the-fly |
+| **Will my existing data work?** | ✅ Yes, if it has the right `tenant_id` |
+| **Is data bidirectional?** | ✅ Yes, app ↔ Supabase |
+
+---
+
+## Important Notes
+
+1. **Make sure your existing data has `tenant_id`** - The app filters by this, so data without it won't show
+2. **All calculations are real-time** - Metrics update as soon as you add/edit data
+3. **No data duplication** - Everything is stored once in Supabase
+4. **Multi-user support** - Each user/team has their own `tenant_id` for data isolation
 
 ---
 
 ## Troubleshooting
 
-### "I added data but don't see it in Supabase"
-- Check browser console (F12) for errors
-- Make sure you're logged in (not demo mode)
-- Verify environment variables are set correctly
-- Try refreshing the page
-
-### "I see data in Supabase but not in the app"
-- Make sure the data has the correct `tenant_id`
+### "I don't see my existing Supabase data"
+- Check that your data has the correct `tenant_id` (match it to your user's `tenant_id`)
 - Check that you're logged in with the right account
-- Try refreshing the app
-- Check browser console for errors
+- Verify the data exists in Supabase Table Editor
 
-### "Changes aren't saving"
+### "Metrics seem wrong"
+- Metrics are calculated from your actual data
+- Check that leads have correct `status` (should be "Closed" for revenue)
+- Check that `price_sold_at` and `upsell_amount` are set correctly
+
+### "Data isn't saving"
 - Check browser console (F12) for errors
-- Verify you're not in demo mode
-- Make sure Supabase project is active (not paused)
-- Check that RLS policies allow your user to write data
+- Verify environment variables are set in Vercel
+- Make sure you're not in demo mode
 
 ---
 
-**Bottom line:** Yes, all data you add/edit/delete in the app is automatically saved to Supabase in real-time! 🚀
+**Bottom line:** Everything you do in the app saves to Supabase, and all metrics are calculated from that real data in real-time! 🎉
