@@ -12,7 +12,10 @@ If you're seeing "failed to fetch" when trying to log in, follow these steps:
    - ✅ `NEXT_PUBLIC_APP_URL`
 
 3. **Check the values:**
-   - `NEXT_PUBLIC_SUPABASE_URL` should look like: `https://xxxxx.supabase.co`
+   - ⚠️ **CRITICAL:** `NEXT_PUBLIC_SUPABASE_URL` should look like: `https://xxxxx.supabase.co`
+     - **NOT** `https://supabase.com/dashboard/...` (that's the dashboard URL, not the API URL!)
+     - **NOT** `https://app.supabase.com/...` (that's also wrong)
+     - It MUST be your project's unique API URL: `https://<your-project-ref>.supabase.co`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY` should be a long string starting with `eyJ...`
    - Make sure there are **no extra spaces** before or after the values
 

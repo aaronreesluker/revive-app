@@ -17,8 +17,12 @@ This guide shows you exactly where to paste your API keys and configure environm
 ### Step 3: Copy These 3 Values
 
 **Value 1: Project URL**
-- Look for **"Project URL"** section
+- Look for **"Project URL"** section (at the top of the API page)
 - Copy the URL (looks like: `https://xxxxxxxxxxxxx.supabase.co`)
+- ⚠️ **IMPORTANT:** Make sure you copy the **Project URL**, NOT the dashboard URL!
+  - ✅ Correct: `https://abcdefghijklmnop.supabase.co`
+  - ❌ Wrong: `https://supabase.com/dashboard/project/...`
+  - ❌ Wrong: `https://app.supabase.com/project/...`
 - **Save this somewhere** - you'll need it in a moment
 
 **Value 2: Anon/Public Key**
