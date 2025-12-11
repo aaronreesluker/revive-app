@@ -196,8 +196,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             return { success: true };
           }
         } catch (error) {
-          console.warn("Supabase login error:", error);
-          return { success: false, message: "Authentication failed" };
+          console.error("Supabase login error:", error);
+          // Provide more specific error messages
+          if (error instanceof TypeError && error.message.includes("fetch")) {
+            return { 
+              success: false, 
+              message: "Failed to connect to database. Please check your internet connection and verify environment variables are set correctly in Vercel." 
+            };
+          }
+          return { 
+            success: false, 
+            message: error instanceof Error ? error.message : "Authentication failed. Please check your credentials and try again." 
+          };
         }
       }
     }
