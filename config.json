@@ -1,0 +1,20 @@
+{
+  "branding": {
+    "name": "Client Name",
+    "colors": { "primary": "#00b3b3" },
+    "poweredByRevive": true
+  },
+  "modules": {
+    "overview": true,
+    "contacts": true,
+    "workflows": true,
+    "reviews": true,
+    "payments": true,
+    "receptionist": true,
+    "insights": true,
+    "settings": true
+  },
+  "copy": { "cta": "Imagine this for your business" },
+  "demoMode": false
+}
+
